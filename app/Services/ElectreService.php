@@ -351,11 +351,9 @@ class ElectreService
 
     /**
      * Metode utama untuk menjalankan seluruh perhitungan ELECTRE.
-     * @param float $concordanceThreshold Ambang batas konkordansi (misal: 0.5, 0.6)
-     * @param float $discordanceThreshold Ambang batas diskordansi (misal: 0.2, 0.3)
      * @return array Hasil perhitungan ELECTRE
      */
-    public function calculateElectre(float $concordanceThreshold = 0.5, float $discordanceThreshold = 0.5)
+    public function calculateElectre() // Hapus parameter threshold
     {
         // Pastikan ada kriteria dan alternatif
         if ($this->criteria->isEmpty() || $this->alternatives->isEmpty()) {
@@ -374,6 +372,9 @@ class ElectreService
 
         $concordanceMatrix = $this->calculateConcordanceMatrix($concordanceSet);
         $discordanceMatrix = $this->calculateDiscordanceMatrix($discordanceSet);
+    // Hitung threshold secara otomatis
+        $concordanceThreshold = $this->_calculateAutomaticConcordanceThreshold($concordanceMatrix);
+        $discordanceThreshold = $this->_calculateAutomaticDiscordanceThreshold($discordanceMatrix);
 
         $concordanceDominanceMatrix = $this->calculateConcordanceDominanceMatrix($concordanceMatrix, $concordanceThreshold);
         $discordanceDominanceMatrix = $this->calculateDiscordanceDominanceMatrix($discordanceMatrix, $discordanceThreshold);
@@ -400,5 +401,44 @@ class ElectreService
             'concordance_threshold' => $concordanceThreshold,
             'discordance_threshold' => $discordanceThreshold
         ];
+    }
+    protected function _calculateAutomaticConcordanceThreshold(array $concordanceMatrix): float
+    {
+        $values = [];
+        $numAlternatives = count($this->alternatives);
+        if ($numAlternatives <= 1) {
+            return 0.5; // Default jika tidak cukup alternatif untuk perbandingan
+        }
+
+        for ($i = 0; $i < $numAlternatives; $i++) {
+            for ($j = 0; $j < $numAlternatives; $j++) {
+                if ($i == $j) continue; // Abaikan diagonal
+                if (isset($concordanceMatrix[$i][$j]) && is_numeric($concordanceMatrix[$i][$j])) {
+                    $values[] = (float)$concordanceMatrix[$i][$j];
+                }
+            }
+        }
+
+        if (empty($values)) return 0.5; // Default jika tidak ada nilai (seharusnya tidak terjadi jika numAlternatives > 1)
+        return array_sum($values) / count($values);
+    }
+    protected function _calculateAutomaticDiscordanceThreshold(array $discordanceMatrix): float
+    {
+        $values = [];
+        $numAlternatives = count($this->alternatives);
+        if ($numAlternatives <= 1) {
+            return 0.5; // Default jika tidak cukup alternatif untuk perbandingan
+        }
+
+        for ($i = 0; $i < $numAlternatives; $i++) {
+            for ($j = 0; $j < $numAlternatives; $j++) {
+                if ($i == $j) continue; // Abaikan diagonal
+                if (isset($discordanceMatrix[$i][$j]) && is_numeric($discordanceMatrix[$i][$j])) {
+                    $values[] = (float)$discordanceMatrix[$i][$j];
+                }
+            }
+        }
+        if (empty($values)) return 0.5; // Default jika tidak ada nilai
+        return array_sum($values) / count($values);
     }
 }

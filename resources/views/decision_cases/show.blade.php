@@ -112,23 +112,7 @@
     @if ($decisionCase->criteria->isNotEmpty() && $decisionCase->alternatives->isNotEmpty())
         <form action="{{ route('decision_cases.calculate_electre', $decisionCase->id) }}" method="POST" class="mb-4">
             @csrf
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="concordance_threshold" class="block text-gray-700 text-sm font-bold mb-2">Ambang Batas Konkordansi (0-1):</label>
-                    <input type="number" name="concordance_threshold" id="concordance_threshold" step="0.01" min="0" max="1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="{{ session('electre_results.concordance_threshold', 0.5) }}">
-                    @error('concordance_threshold')
-                        <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div>
-                    <label for="discordance_threshold" class="block text-gray-700 text-sm font-bold mb-2">Ambang Batas Diskordansi (0-1):</label>
-                    <input type="number" name="discordance_threshold" id="discordance_threshold" step="0.01" min="0" max="1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="{{ session('electre_results.discordance_threshold', 0.5) }}">
-                    @error('discordance_threshold')
-                        <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
-            <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+            <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 mb-4">
                 Proses ELECTRE
             </button>
         </form>
@@ -301,7 +285,12 @@
 
                 {{-- Matriks Dominansi Konkordansi --}}
                 <div class="mb-6">
-                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Matriks Dominansi Konkordansi (F_C) (Threshold: {{ $results['concordance_threshold'] }})</h4>
+                    <h4 class="text-lg font-semibold text-gray-700 mb-2">
+                        Matriks Dominansi Konkordansi (F_C) 
+                        @if(isset($results['concordance_threshold']))
+                        (Threshold Otomatis: {{ number_format($results['concordance_threshold'], 2) }})
+                        @endif
+                    </h4>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white border border-gray-200 rounded-lg text-xs">
                             <thead>
@@ -328,7 +317,12 @@
 
                 {{-- Matriks Dominansi Diskordansi --}}
                 <div class="mb-6">
-                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Matriks Dominansi Diskordansi (F_D) (Threshold: {{ $results['discordance_threshold'] }})</h4>
+                    <h4 class="text-lg font-semibold text-gray-700 mb-2">
+                        Matriks Dominansi Diskordansi (F_D)
+                        @if(isset($results['discordance_threshold']))
+                            (Threshold Otomatis: {{ number_format($results['discordance_threshold'], 4) }})
+                        @endif
+                    </h4>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white border border-gray-200 rounded-lg text-xs">
                             <thead>

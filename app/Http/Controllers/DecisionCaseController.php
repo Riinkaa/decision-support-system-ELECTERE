@@ -89,20 +89,12 @@ class DecisionCaseController extends Controller
     }
     public function calculateElectre(Request $request, DecisionCase $decisionCase)
     {
-        // Validasi opsional untuk threshold jika diinput dari form
-        $request->validate([
-            'concordance_threshold' => 'nullable|numeric|min:0|max:1',
-            'discordance_threshold' => 'nullable|numeric|min:0|max:1',
-        ]);
-
-        // Ambil threshold dari request atau gunakan nilai default
-        $concordanceThreshold = (double) $request->input('concordance_threshold', 0.5); // Default 0.5
-        $discordanceThreshold = (double) $request->input('discordance_threshold', 0.5); // Default 0.5
+       
 
         // Inisialisasi service ELECTRE
         $electreService = new ElectreService($decisionCase);
-        $results = $electreService->calculateElectre($concordanceThreshold, $discordanceThreshold);
-
+       
+        $results = $electreService->calculateElectre();
         // Jika ada error (misal: kriteria/alternatif kurang)
         if (isset($results['error'])) {
             return redirect()->route('decision_cases.show', $decisionCase->id)
